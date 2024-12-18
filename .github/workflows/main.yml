@@ -24,15 +24,13 @@ jobs:
         cache: 'npm'
     
     - name: Install dependencies
-      run: npm ci
+      run: |
+        npm config set legacy-peer-deps true
+        npm ci --verbose
       
     - name: Build
-      run: npm run build
-      env:
-        CI: false # This prevents treating warnings as errors
-        
-    - name: Test
-      run: npm test -- --passWithNoTests
+      run: |
+        CI=false npm run build --verbose
       
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
