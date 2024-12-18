@@ -1,0 +1,41 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  line-height: 1.2;
+}
+
+
+.app {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.macro-parent-container {
+}
+
+.macro-parent-container::-webkit-scrollbar {
+  display: none;
+  background: transparent;
+  width: 10px;
+}
+
+.macro-parent-container::-webkit-scrollbar-thumb {
+  background: transparent;
+  transition: background 0.2s;
+}
+
+.macro-parent-container:hover::-webkit-scrollbar-thumb {
+  background: var(--app-28);
+}
+
+.macro-parent-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+
+#root {
+}
