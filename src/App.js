@@ -1542,7 +1542,7 @@ const App = () => {
       onKeyDown={handleKeyDown}
       style={{ outline: 'none'}}
     >
-      Test new 4
+      Test new 5 with CloudFront
     </div>
   )
 }
