@@ -1542,7 +1542,7 @@ const App = () => {
       onKeyDown={handleKeyDown}
       style={{ outline: 'none'}}
     >
-      Test new 2
+      Test new 4
     </div>
   )
 }
