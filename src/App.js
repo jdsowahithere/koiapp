@@ -11,14 +11,9 @@ const App = () => {
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-  // Update API URL to use Render
-  const apiURL = process.env.REACT_APP_API_URL || (
-    process.env.NODE_ENV === 'production'
-      ? 'https://koi-server.onrender.com'  // Your Render backend service URL
-      : 'http://localhost:5000'
-  );
-
-  console.log('Current API URL:', apiURL);
+  // Simplified API URL configuration
+  const apiURL = 'https://koi-server.onrender.com';  // Direct URL for now
+  console.log('Using API URL:', apiURL);
 
   const testOperations = [
     // {
@@ -1611,7 +1606,7 @@ const App = () => {
       onKeyDown={handleKeyDown}
       style={{ outline: 'none'}}
     >
-      Test Render Deployment - Full API (left arrow)
+      Test Render API Connection (press left arrow)
     </div>
   )
 }
