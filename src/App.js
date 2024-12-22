@@ -11,37 +11,51 @@ const App = () => {
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-  const apiURL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  // Update API URL to use Render
+  const apiURL = process.env.REACT_APP_API_URL || (
+    process.env.NODE_ENV === 'production'
+      ? 'https://koi-server.onrender.com'  // Your Render backend service URL
+      : 'http://localhost:5000'
+  );
+
+  console.log('Current API URL:', apiURL);
 
   const testOperations = [
+    // {
+    //   id: 'read-csv',
+    //   opType: 'read',
+    //   file: `${process.env.PUBLIC_URL}/Clinical_Trial_Sites_Dataset.csv`,
+    //   targetStruct: 'data',
+    //   name: 'Clinical Trial Sites',
+    //   status: 'ready',
+    // },
+    // {
+    //   id: 'update-data-collection',
+    //   opType: 'update',
+    //   targetStruct: 'data',
+    //   targetKey: `=[operations][read-csv][result][0][data]`,
+    //   db: 'production',
+    //   collection: `="org_" & [app][currentOrganization] & "_data_1"`,
+    //   status: 'pending',
+    //   dependencies: ['read-csv'],
+    // },
+    // {
+    //   id: 'write-data-collection-to-db',
+    //   opType: 'update',
+    //   targetStruct: 'data',
+    //   targetKey: 'Clinical Trial Sites',
+    //   db: 'production',
+    //   collection: `="org_" & [app][currentOrganization] & "_data_1"`,
+    //   status: 'pending',
+    //   dependencies: ['update-data-collection'],
+    // },
     {
-      id: 'read-csv',
-      opType: 'read',
-      file: `${process.env.PUBLIC_URL}/Clinical_Trial_Sites_Dataset.csv`,
-      targetStruct: 'data',
-      name: 'Clinical Trial Sites',
+      id: 'create-org-folder',
+      opType: 'create',
+      targetStruct: 'folders',
+      targetKey: `=[app][currentOrganization]`,
       status: 'ready',
     },
-    {
-      id: 'update-data-collection',
-      opType: 'update',
-      targetStruct: 'data',
-      targetKey: `=[operations][read-csv][result][0][data]`,
-      db: 'production',
-      collection: `="org_" & [app][currentOrganization] & "_data_1"`,
-      status: 'pending',
-      dependencies: ['read-csv'],
-    },
-    {
-      id: 'write-data-collection-to-db',
-      opType: 'update',
-      targetStruct: 'data',
-      targetKey: 'Clinical Trial Sites',
-      db: 'production',
-      collection: `="org_" & [app][currentOrganization] & "_data_1"`,
-      status: 'pending',
-      dependencies: ['update-data-collection'],
-    }
     // {
     //   id: 'test-operation-1',
     //   opType: 'read',
@@ -104,47 +118,41 @@ const App = () => {
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+  // Update the API configuration
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    // Disable withCredentials since we're using Render's CORS
+    withCredentials: false
+  };
+
   // get Users from DB
   const apiGetUsers = async (userIds, dbId) => {
     try {
-      // Log the exact request parameters
       console.log('apiGetUsers - Request details:', {
         userIds: Array.isArray(userIds) ? userIds : [userIds],
         dbId,
-        url: `${apiURL}/api/users/`,
-        fullUrl: `${apiURL}/api/users/?userIds=${Array.isArray(userIds) ? userIds.join(',') : userIds}&dbId=${dbId}`
+        url: `${apiURL}/api/users/`
       });
       
-      // Handle both single ID and array of IDs
       const ids = Array.isArray(userIds) ? userIds : [userIds];
       const response = await axios.get(`${apiURL}/api/users/`, {
+        ...axiosConfig,
         params: { 
           userIds: ids,
           dbId: dbId
         }
       });
       
-      // Log the response details
-      console.log('apiGetUsers - Response details:', {
-        status: response.status,
-        statusText: response.statusText,
-        data: response.data,
-        headers: response.headers
-      });
-
+      console.log('apiGetUsers - Response:', response.data);
       const results = response.data;
       return Array.isArray(results) ? results : [results];
     } catch (error) {
-      console.error('apiGetUsers - Error details:', {
+      console.error('apiGetUsers - Error:', {
         message: error.message,
         status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        config: {
-          url: error.config?.url,
-          params: error.config?.params,
-          method: error.config?.method
-        }
+        data: error.response?.data
       });
       return null;
     }
@@ -153,11 +161,14 @@ const App = () => {
   // get Organizations from DB
   const apiGetOrganizations = async (orgIds, dbId) => {
     try {
-      console.log('apiGetOrganizations - Calling API with:', { orgIds, dbId, url: `${apiURL}/api/organizations/` });
+      console.log('apiGetOrganizations - Request details:', { 
+        orgIds, 
+        dbId 
+      });
       
-      // Handle both single ID and array of IDs
       const ids = Array.isArray(orgIds) ? orgIds : [orgIds];
       const response = await axios.get(`${apiURL}/api/organizations/`, {
+        ...axiosConfig,
         params: { 
           organizationIds: ids,
           dbId: dbId
@@ -168,16 +179,10 @@ const App = () => {
       const results = response.data;
       return Array.isArray(results) ? results : [results];
     } catch (error) {
-      console.error('apiGetOrganizations - Error details:', {
+      console.error('apiGetOrganizations - Error:', {
         message: error.message,
         status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        config: {
-          url: error.config?.url,
-          params: error.config?.params,
-          method: error.config?.method
-        }
+        data: error.response?.data
       });
       return null;
     }
@@ -220,22 +225,19 @@ const App = () => {
   
   const apiUpdateData = async (dbId, collection, data, metadata) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/${dbId}/${collection}/update`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ data, metadata }),
-      });
+      const response = await axios.post(
+        `${apiURL}/api/${dbId}/${collection}/update`,
+        { data, metadata },
+        axiosConfig
+      );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      return result;
+      return response.data;
     } catch (error) {
-      console.error('Error updating data:', error);
+      console.error('Error updating data:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data
+      });
       return null;
     }
   };
@@ -299,6 +301,30 @@ const App = () => {
     } catch (error) {
       console.error('Error updating data collection:', error);
       throw error;
+    }
+  };
+
+
+  // Create folder on server
+  const createFolder = async (folderId) => {
+    try {
+      console.log('createFolder - Starting folder creation:', { folderId });
+      
+      const response = await axios.post(
+        `${apiURL}/api/folders/create`,
+        { folderId },
+        axiosConfig
+      );
+      
+      console.log('createFolder - Response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('createFolder - Error:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data
+      });
+      return null;
     }
   };
 
@@ -680,6 +706,22 @@ const App = () => {
               updatedOp.status = success ? 'completed' : 'error';
             } catch (error) {
               console.error('Error in update operation:', error);
+              updatedOp.status = 'error';
+              updatedOp.error = error.message;
+            }
+          }
+
+          // Update the operations processor to handle folder creation
+          if (updatedOp.opType === 'create' && updatedOp.targetStruct === 'folders') {
+            try {
+              const result = await createFolder(resolvedTargetKey);
+              updatedOp.result = result;
+              updatedOp.status = result ? 'completed' : 'error';
+              if (!result) {
+                updatedOp.error = 'Failed to create folder';
+              }
+            } catch (error) {
+              console.error('Error in folder creation:', error);
               updatedOp.status = 'error';
               updatedOp.error = error.message;
             }
@@ -1504,7 +1546,24 @@ const App = () => {
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-  // Handle key down events
+  // Add this with your other API functions
+  const testApiConnection = async () => {
+    try {
+      console.log('Testing API connection to:', apiURL);
+      const response = await axios.get(`${apiURL}/api/ping`, axiosConfig);
+      console.log('Ping response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('API connection test failed:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data
+      });
+      return null;
+    }
+  };
+
+  // Update the handleKeyDown function
   const handleKeyDown = (event) => {
     console.log('handleKeyDown');
     switch (event.key) {
@@ -1518,6 +1577,15 @@ const App = () => {
           const updatedOperations = [...prevOperations];
           updatedOperations.push(...testOperations);  // Spread operator to add all test operations
           return updatedOperations;
+        });
+        break;
+      case 'ArrowLeft':
+        testApiConnection().then(result => {
+          if (result) {
+            alert(`API Connection Success! Server says: ${result.message}\nTimestamp: ${result.timestamp}`);
+          } else {
+            alert('API Connection Failed! Check console for details.');
+          }
         });
         break;
     }
@@ -1542,7 +1610,7 @@ const App = () => {
       onKeyDown={handleKeyDown}
       style={{ outline: 'none'}}
     >
-      Test deployment with CloudFront - Full API
+      Test Render Deployment - Full API
     </div>
   )
 }
