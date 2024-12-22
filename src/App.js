@@ -314,10 +314,14 @@ const App = () => {
         ? `${operation.path}/${operation.onPropValue}/`
         : `${operation.onPropValue}/`;
 
+      if (!process.env.REACT_APP_S3_BUCKET) {
+        throw new Error('S3 bucket name not configured. Please set REACT_APP_S3_BUCKET environment variable.');
+      }
+
       const response = await axios.post(
         `${apiURL}/api/folders/create`,
         { 
-          bucketName: 'app-files-4e5a6b7c',
+          bucketName: process.env.REACT_APP_S3_BUCKET,
           folderPath: fullPath
         },
         axiosConfig
@@ -1618,7 +1622,7 @@ const App = () => {
       onKeyDown={handleKeyDown}
       style={{ outline: 'none'}}
     >
-      Test Render API Connection (test folder create)
+      Test Render API Connection (test folder create - attempt after updating secrets)
     </div>
   )
 }
