@@ -44,23 +44,24 @@ const App = () => {
     //   status: 'pending',
     //   dependencies: ['update-data-collection'],
     // },
-    // {
-    //   id: 'create-org-folder',
-    //   opType: 'create',
-    //   targetStruct: 'folders',
-    //   targetKey: `=[app][currentOrganization]`,
-    //   status: 'ready',
-    // },
     {
-      id: 'test-operation-1',
-      opType: 'read',
-      targetStruct: 'users',
-      targetKey: ['jesse.sowa@iteostherapeutics.com', 'jdsowa@hotmail.com'],
-      db: 'production',
-      collection: 'users',
+      id: 'create-org-folder',
+      opType: 'create',
+      targetStruct: 'folders',
+      path: null,
+      onPropValue: `test-folder`,
       status: 'ready',
-      result: null,
     },
+    // {
+    //   id: 'test-operation-1',
+    //   opType: 'read',
+    //   targetStruct: 'users',
+    //   targetKey: ['jesse.sowa@iteostherapeutics.com', 'jdsowa@hotmail.com'],
+    //   db: 'production',
+    //   collection: 'users',
+    //   status: 'ready',
+    //   result: null,
+    // },
     // {
     //   id: 'test-operation-2',
     //   opType: 'read',
@@ -301,13 +302,24 @@ const App = () => {
 
 
   // Create folder on server
-  const createFolder = async (folderId) => {
+  const createFolder = async (operation) => {
     try {
-      console.log('createFolder - Starting folder creation:', { folderId });
+      console.log('createFolder - Starting folder creation:', { 
+        folderName: operation.onPropValue,
+        path: operation.path
+      });
       
+      // Construct the full path (if path is provided, join it with folder name)
+      const fullPath = operation.path 
+        ? `${operation.path}/${operation.onPropValue}/`
+        : `${operation.onPropValue}/`;
+
       const response = await axios.post(
         `${apiURL}/api/folders/create`,
-        { folderId },
+        { 
+          bucketName: 'app-files-4e5a6b7c',
+          folderPath: fullPath
+        },
         axiosConfig
       );
       
@@ -709,7 +721,7 @@ const App = () => {
           // Update the operations processor to handle folder creation
           if (updatedOp.opType === 'create' && updatedOp.targetStruct === 'folders') {
             try {
-              const result = await createFolder(resolvedTargetKey);
+              const result = await createFolder(updatedOp);
               updatedOp.result = result;
               updatedOp.status = result ? 'completed' : 'error';
               if (!result) {
