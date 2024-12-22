@@ -1606,7 +1606,7 @@ const App = () => {
       onKeyDown={handleKeyDown}
       style={{ outline: 'none'}}
     >
-      Test Render API Connection (press left arrow)
+      Test Render API Connection (test DB)
     </div>
   )
 }
