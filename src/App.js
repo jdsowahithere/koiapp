@@ -1611,7 +1611,7 @@ const App = () => {
       onKeyDown={handleKeyDown}
       style={{ outline: 'none'}}
     >
-      Test Render Deployment - Full API
+      Test Render Deployment - Full API (left arrow)
     </div>
   )
 }
