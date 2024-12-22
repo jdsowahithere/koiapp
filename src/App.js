@@ -1580,6 +1580,7 @@ const App = () => {
         });
         break;
       case 'ArrowLeft':
+        console.log('ArrowLeft');
         testApiConnection().then(result => {
           if (result) {
             alert(`API Connection Success! Server says: ${result.message}\nTimestamp: ${result.timestamp}`);
